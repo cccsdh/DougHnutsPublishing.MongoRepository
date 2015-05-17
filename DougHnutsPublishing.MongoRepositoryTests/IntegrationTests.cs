@@ -109,5 +109,83 @@ namespace DougHnutsPublishing.MongoRepositoryTests
 
             }
         }
+
+        [Fact]
+        public async void Can_Delete_a_specific_Document_using_Delete()
+        {
+            var docs = new List<BsonDocument>();
+            docs.Add(new BsonDocument() { new BsonElement("TestField1", 192) });
+            docs.Add(new BsonDocument() { new BsonElement("TestField1", 193) });
+            docs.Add(new BsonDocument() { new BsonElement("TestField1", 192) });
+
+            using (var database = new Database<BsonDocument>("DHPTest"))
+            {
+                //clear all from database
+                await database.DeleteMany(new BsonDocument());
+                await database.Add(docs);
+
+                var result = await database.All();
+                result.Count().Should().Be(3);
+
+                var deleteDoc = result.First();
+                var filter = Builders<BsonDocument>.Filter.Eq("_id", deleteDoc["_id"]);
+                await database.Delete(filter);
+                result = await database.All();
+                result.Count().Should().Be(2);
+
+            }
+        }
+
+        [Fact]
+        public async void Can_Delete_a_specific_Document_using_DeleteMany()
+        {
+            var docs = new List<BsonDocument>();
+            docs.Add(new BsonDocument() { new BsonElement("TestField1", 192) });
+            docs.Add(new BsonDocument() { new BsonElement("TestField1", 193) });
+            docs.Add(new BsonDocument() { new BsonElement("TestField1", 192) });
+
+            using (var database = new Database<BsonDocument>("DHPTest"))
+            {
+                //clear all from database
+                await database.DeleteMany(new BsonDocument());
+                await database.Add(docs);
+
+                var result = await database.All();
+                result.Count().Should().Be(3);
+
+                var deleteDoc = result.First();
+                var filter = Builders<BsonDocument>.Filter.Eq("_id", deleteDoc["_id"]);
+                await database.DeleteMany(filter);
+                result = await database.All();
+                result.Count().Should().Be(2);
+
+            }
+        }
+
+        [Fact]
+        public async void Can_Delete_Multiple_Documents_based_on_filter()
+        {
+            var docs = new List<BsonDocument>();
+            docs.Add(new BsonDocument() { new BsonElement("TestField1", 192) });
+            docs.Add(new BsonDocument() { new BsonElement("TestField1", 193) });
+            docs.Add(new BsonDocument() { new BsonElement("TestField1", 192) });
+
+            using (var database = new Database<BsonDocument>("DHPTest"))
+            {
+                //clear all from database
+                await database.DeleteMany(new BsonDocument());
+                await database.Add(docs);
+
+                var result = await database.All();
+                result.Count().Should().Be(3);
+
+                var deleteDoc = result.First();
+                var filter = Builders<BsonDocument>.Filter.Gt("TestField1", 191);
+                await database.DeleteMany(filter);
+                result = await database.All();
+                result.Count().Should().Be(0);
+
+            }
+        }
     }
 }
